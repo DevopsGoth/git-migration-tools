@@ -1,7 +1,7 @@
 ﻿param ($organizationUri, $projectName, $jsonFile)
 
 
-function Migrate-Git{
+function Copy-Git{
     <#
     .SYNOPSIS
         Fetches all git repos from input and creates them in Azure Devops Repos
@@ -17,7 +17,8 @@ function Migrate-Git{
     
     $sourceRepos | ForEach-Object -Process {
         $repoFolder = $_.split("/")[-1]
-        $repoName = $repoFolder.TrimEnd(".git")
+        $repoName = $repoFolder.substring(0,$repoFolder.Length-4)
+        Write-Host "Repo folder: $repoFolder cloning into repo name $repoName from url: $_"
         $azrepo = Create-AzureRepo -repoName $repoName
         # if it returns blank, the repo already exists, don't migrate this repository
         if ([string]::IsNullOrEmpty($azrepo)){
@@ -31,7 +32,7 @@ function Migrate-Git{
     }
 }
 
-function Create-AzureRepo{
+function Add-AzureRepo{
     # only create if it doesn't exist already
     param($repoName)
     $azrepo = az repos create --name $repoName --query 'remoteUrl'
@@ -44,14 +45,12 @@ function Create-AzureRepo{
 
 function Initialize-az{
     param ($organizationURI, $projectName)
-    Write-Host "Setting project defaults: organization=$organizationURI project=$projectName"
 
-    Write-Host "Logging into Azure"
-    az login
+    Write-Host "Logging into Azure DevOps; you will need to provide a Personal Access Token with git permissions"
+    az devops login --organization $organizationURI
     Write-Host "Setting project defaults: organization=$organizationURI project=$projectName"
     az devops configure --defaults organization=$organizationURI project=$projectName
 }
 
-echo "$organizationUri $projectName $jsonFile"
 Initialize-az -organizationURI $organizationUri -projectName $projectName
-Migrate-Git -jsonfile $jsonFile
+Copy-Git -jsonfile $jsonFile

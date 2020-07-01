@@ -16,3 +16,5 @@ Running Migration
 To migrate from a json file containing Bitbucket API output, run the script as follows, adjust values to your environment:
 
     ./Migrate-Bitbucket-to-AzureRepos.ps1 -organizationUri https://dev.azure.com/DevopsGoth/ -projectName "ado project" -jsonFile git_repos.json
+
+You will need to have a Personal Access Token that provides authentication to git.  Your environment should also be able to use 'git clone' on your original repositories (ie git credentials are set up), and access Azure DevOps correctly (accounting for organization proxy servers etc)
